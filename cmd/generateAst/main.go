@@ -44,7 +44,7 @@ func defineAst(outputDir, baseName string, types []string) (err error) {
 
 	// define baseName interface
 	fmt.Fprintln(writer, "type", baseName, "interface {")
-	fmt.Fprintln(writer, "	accept(visitor Visitor) any")
+	fmt.Fprintln(writer, "	Accept(visitor Visitor) any")
 	fmt.Fprintln(writer, "}")
 	fmt.Fprintln(writer)
 
@@ -83,8 +83,8 @@ func defineType(writer io.Writer, baseName, structName, fieldList string) {
 	fmt.Fprintln(writer)
 
     // define accept
-	fmt.Fprintln(writer, "func (e", structName+")", "accept(visitor Visitor)", "any", "{")
-	fmt.Fprintln(writer, "	return visitor.visit"+structName+baseName+"(e)")
+	fmt.Fprintln(writer, "func (e", structName+")", "Accept(visitor Visitor)", "any", "{")
+	fmt.Fprintln(writer, "	return visitor.Visit"+structName+baseName+"(e)")
 	fmt.Fprintln(writer, "}")
 
 	fmt.Fprintln(writer)
@@ -95,7 +95,7 @@ func defineVisitor(writer io.Writer, baseName string, types []string) {
 	for _, typ := range types {
 		splitedTyp := strings.Split(typ, ":")[0]
 		typeName := strings.TrimSpace(splitedTyp)
-        fmt.Fprintln(writer, "	visit"+typeName+baseName+"("+strings.ToLower(typeName), typeName+")", "any")
+        fmt.Fprintln(writer, "	Visit"+typeName+baseName+"("+strings.ToLower(typeName), typeName+")", "any")
 	}
 	fmt.Fprintln(writer, "}")
 	fmt.Fprintln(writer)
