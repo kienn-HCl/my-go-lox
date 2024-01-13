@@ -5,8 +5,8 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"my-lox-go"
 	"os"
-    "my-lox-go"
 )
 
 func main() {
@@ -26,11 +26,7 @@ func runFile(path string) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	err = run(string(bytes))
-
-	if err != nil {
-		os.Exit(65)
-	}
+	run(string(bytes))
 }
 
 func runPrompt() {
@@ -40,17 +36,13 @@ func runPrompt() {
 		if !reader.Scan() {
 			break
 		}
-		err := run(reader.Text())
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-		}
+		run(reader.Text())
 	}
 }
 
-func run(source string) error {
-    scan := myloxgo.NewScanner(source)
-    for _, token := range scan.ScanTokens() {
-        fmt.Println(token)
-    }
-	return nil
+func run(source string) {
+	scan := myloxgo.NewScanner(source)
+	for _, token := range scan.ScanTokens() {
+		fmt.Println(token)
+	}
 }
