@@ -7,7 +7,7 @@ import (
 
 var HadError bool = false
 
-func error(line int, message string) {
+func scannerError(line int, message string) {
 	report(line, "", message)
 }
 
