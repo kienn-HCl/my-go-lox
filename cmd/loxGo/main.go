@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"my-lox-go"
+	"my-lox-go/pkg/astPrinter"
 	"os"
 )
 
@@ -37,12 +38,20 @@ func runPrompt() {
 			break
 		}
 		run(reader.Text())
+		myloxgo.HadError = false
 	}
 }
 
 func run(source string) {
 	scan := myloxgo.NewScanner(source)
-	for _, token := range scan.ScanTokens() {
-		fmt.Println(token)
+	tokens := scan.ScanTokens()
+	parser := myloxgo.NewParser(tokens)
+	expression := parser.Parse()
+
+	if myloxgo.HadError {
+		return
 	}
+
+	printer := &astPrinter.AstPrinter{}
+	fmt.Println(printer.Print(expression))
 }

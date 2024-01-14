@@ -8,10 +8,18 @@ import (
 var HadError bool = false
 
 func error(line int, message string) {
-    report(line, "", message)
+	report(line, "", message)
 }
 
-func report(line int, where ,message string) {
-    fmt.Fprintln(os.Stderr, "[line", line, "] Error", where, ":", message)
-    HadError = true
+func parserError(token Token, message string) {
+	if token.Typ == EOF {
+		report(token.Line, " at end", message)
+	} else {
+		report(token.Line, " at '"+token.Lexeme+"'", message)
+	}
+}
+
+func report(line int, where, message string) {
+	fmt.Fprintln(os.Stderr, "[line", line, "] Error", where, ":", message)
+	HadError = true
 }
