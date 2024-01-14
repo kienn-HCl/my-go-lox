@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"log"
 	"my-lox-go"
-	"my-lox-go/pkg/astPrinter"
 	"os"
 )
+
+var interpreter *myloxgo.Interpreter = &myloxgo.Interpreter{}
 
 func main() {
 	flag.Parse()
@@ -28,6 +29,13 @@ func runFile(path string) {
 		log.Fatalln(err)
 	}
 	run(string(bytes))
+
+	if myloxgo.HadError {
+		os.Exit(65)
+	}
+	if myloxgo.HadRuntimeError {
+		os.Exit(70)
+	}
 }
 
 func runPrompt() {
@@ -52,6 +60,5 @@ func run(source string) {
 		return
 	}
 
-	printer := &astPrinter.AstPrinter{}
-	fmt.Println(printer.Print(expression))
+	interpreter.Interpret(expression)
 }
