@@ -32,7 +32,7 @@ func (p *Parser) equality() (Expr, bool) {
 	}
 
 	for p.match(BANG_EQUAL, EQUAL_EQUAL) {
-		operator := p.previous()
+		operator := *p.previous()
 		right, ok := p.comparison()
 		if !ok {
 			return nil, false
@@ -50,7 +50,7 @@ func (p *Parser) comparison() (Expr, bool) {
 	}
 
 	for p.match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL) {
-		operator := p.previous()
+		operator := *p.previous()
 		right, ok := p.term()
 		if !ok {
 			return nil, false
@@ -68,7 +68,7 @@ func (p *Parser) term() (Expr, bool) {
 	}
 
 	for p.match(MINUS, PLUS) {
-		operator := p.previous()
+		operator := *p.previous()
 		right, ok := p.factor()
 		if !ok {
 			return nil, false
@@ -86,7 +86,7 @@ func (p *Parser) factor() (Expr, bool) {
 	}
 
 	for p.match(SLASH, STAR) {
-		operator := p.previous()
+		operator := *p.previous()
 		right, ok := p.unary()
 		if !ok {
 			return nil, false
@@ -99,7 +99,7 @@ func (p *Parser) factor() (Expr, bool) {
 
 func (p *Parser) unary() (Expr, bool) {
 	if p.match(BANG, MINUS) {
-		operator := p.previous()
+		operator := *p.previous()
 		right, ok := p.unary()
 		if !ok {
 			return nil, false
@@ -153,7 +153,7 @@ func (p *Parser) check(typ TokenType) bool {
 	return p.peek().Typ == typ
 }
 
-func (p *Parser) advance() Token {
+func (p *Parser) advance() *Token {
 	if !p.isAtEnd() {
 		p.current++
 	}
@@ -164,18 +164,18 @@ func (p *Parser) isAtEnd() bool {
 	return p.peek().Typ == EOF
 }
 
-func (p *Parser) peek() Token {
-	return p.tokens[p.current]
+func (p *Parser) peek() *Token {
+	return &p.tokens[p.current]
 }
 
-func (p *Parser) previous() Token {
-	return p.tokens[p.current-1]
+func (p *Parser) previous() *Token {
+	return &p.tokens[p.current-1]
 }
 
-func (p *Parser) consume(typ TokenType, message string) (Token, bool) {
+func (p *Parser) consume(typ TokenType, message string) (*Token, bool) {
 	if !p.check(typ) {
 		parserError(p.peek(), message)
-		return Token{}, false
+		return nil, false
 	}
 
 	return p.advance(), true

@@ -11,7 +11,7 @@ func error(line int, message string) {
 	report(line, "", message)
 }
 
-func parserError(token Token, message string) {
+func parserError(token *Token, message string) {
 	if token.Typ == EOF {
 		report(token.Line, " at end", message)
 	} else {
