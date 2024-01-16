@@ -18,10 +18,18 @@ func main() {
 	}
 	outputDir := flag.Arg(0)
 	err := defineAst(outputDir, "Expr", []string{
-		"Binary : Left Expr, Operator Token, Right Expr",
+		"Binary     : Left Expr, Operator Token, Right Expr",
 		"Grouping   : Expression Expr",
 		"Literal    : Value any",
-		"Unary  : Operator Token, Right Expr"})
+		"Unary      : Operator Token, Right Expr",
+	})
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = defineAst(outputDir, "Stmt", []string{
+		"Express    : Expression Expr",
+		"Print      : Expression Expr",
+	})
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -44,7 +52,7 @@ func defineAst(outputDir, baseName string, types []string) (err error) {
 
 	// define baseName interface
 	fmt.Fprintln(writer, "type", baseName, "interface {")
-	fmt.Fprintln(writer, "	Accept(visitor Visitor) any")
+	fmt.Fprintln(writer, "	Accept(visitor Visitor"+baseName+") any")
 	fmt.Fprintln(writer, "}")
 	fmt.Fprintln(writer)
 
@@ -82,8 +90,8 @@ func defineType(writer io.Writer, baseName, structName, fieldList string) {
 	fmt.Fprintln(writer, "}")
 	fmt.Fprintln(writer)
 
-    // define accept
-	fmt.Fprintln(writer, "func (e", structName+")", "Accept(visitor Visitor)", "any", "{")
+	// define accept
+	fmt.Fprintln(writer, "func (e", structName+")", "Accept(visitor Visitor"+baseName+")", "any", "{")
 	fmt.Fprintln(writer, "	return visitor.Visit"+structName+baseName+"(e)")
 	fmt.Fprintln(writer, "}")
 
@@ -91,11 +99,11 @@ func defineType(writer io.Writer, baseName, structName, fieldList string) {
 }
 
 func defineVisitor(writer io.Writer, baseName string, types []string) {
-	fmt.Fprintln(writer, "type", "Visitor", "interface {")
+	fmt.Fprintln(writer, "type", "Visitor"+baseName, "interface {")
 	for _, typ := range types {
 		splitedTyp := strings.Split(typ, ":")[0]
 		typeName := strings.TrimSpace(splitedTyp)
-        fmt.Fprintln(writer, "	Visit"+typeName+baseName+"("+strings.ToLower(typeName), typeName+")", "any")
+		fmt.Fprintln(writer, "	Visit"+typeName+baseName+"("+strings.ToLower(baseName), typeName+")", "any")
 	}
 	fmt.Fprintln(writer, "}")
 	fmt.Fprintln(writer)

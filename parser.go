@@ -12,17 +12,47 @@ func NewParser(tokens []Token) *Parser {
 	}
 }
 
-func (p *Parser) Parse() Expr {
-	expr, ok := p.expression()
-	if !ok {
-		return nil
+func (p *Parser) Parse() []Stmt {
+	statements := make([]Stmt, 0, 100)
+	for !p.isAtEnd() {
+		stmt := p.statement()
+		if stmt == nil {
+			p.synchronize()
+		}
+		statements = append(statements, stmt)
 	}
 
-	return expr
+	return statements
 }
 
 func (p *Parser) expression() (Expr, bool) {
 	return p.equality()
+}
+
+func (p *Parser) statement() Stmt {
+	if p.match(PRINT) {
+		return p.printStatement()
+	}
+
+	return p.expressionStatement()
+}
+
+func (p *Parser) printStatement() Stmt {
+	value, ok := p.expression()
+	if !ok {
+		return nil
+	}
+	p.consume(SEMICOLON, "Expect ';' after expression.")
+	return NewPrint(value)
+}
+
+func (p *Parser) expressionStatement() Stmt {
+	expr, ok := p.expression()
+	if !ok {
+		return nil
+	}
+	p.consume(SEMICOLON, "Expect ';' after expression.")
+	return NewExpress(expr)
 }
 
 func (p *Parser) equality() (Expr, bool) {

@@ -10,14 +10,15 @@ var HadRuntimeError bool = false
 type Interpreter struct {
 }
 
-func (i *Interpreter) Interpret(expression Expr) {
-	value := i.evaluate(expression)
-	if v, ok := value.(error); ok {
-		fmt.Fprintln(os.Stderr, v)
-		HadRuntimeError = true
-		return
+func (i *Interpreter) Interpret(statements []Stmt) {
+	for _, statement := range statements {
+		err := i.execute(statement)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			HadRuntimeError = true
+			return
+		}
 	}
-	fmt.Println(i.stringify(value))
 }
 
 func (i *Interpreter) VisitBinaryExpr(expr Binary) any {
@@ -99,6 +100,27 @@ func (i *Interpreter) VisitLiteralExpr(expr Literal) any {
 
 func (i *Interpreter) evaluate(expr Expr) any {
 	return expr.Accept(i)
+}
+
+func (i *Interpreter) execute(stmt Stmt) any {
+	return stmt.Accept(i)
+}
+
+func (i *Interpreter) VisitExpressStmt(stmt Express) any {
+	value := i.evaluate(stmt.Expression)
+	if err, ok := value.(error); ok {
+		return err
+	}
+	return nil
+}
+
+func (i *Interpreter) VisitPrintStmt(stmt Print) any {
+	value := i.evaluate(stmt.Expression)
+	if err, ok := value.(error); ok {
+		return err
+	}
+	fmt.Println(i.stringify(value))
+	return nil
 }
 
 func (i *Interpreter) isTruthy(object any) bool {

@@ -1,7 +1,7 @@
 package myloxgo
 
 type Expr interface {
-	Accept(visitor Visitor) any
+	Accept(visitor VisitorExpr) any
 }
 
 type Binary struct {
@@ -18,7 +18,7 @@ func NewBinary(Left Expr, Operator Token, Right Expr) *Binary {
 	}
 }
 
-func (e Binary) Accept(visitor Visitor) any {
+func (e Binary) Accept(visitor VisitorExpr) any {
 	return visitor.VisitBinaryExpr(e)
 }
 
@@ -32,7 +32,7 @@ func NewGrouping(Expression Expr) *Grouping {
 	}
 }
 
-func (e Grouping) Accept(visitor Visitor) any {
+func (e Grouping) Accept(visitor VisitorExpr) any {
 	return visitor.VisitGroupingExpr(e)
 }
 
@@ -46,7 +46,7 @@ func NewLiteral(Value any) *Literal {
 	}
 }
 
-func (e Literal) Accept(visitor Visitor) any {
+func (e Literal) Accept(visitor VisitorExpr) any {
 	return visitor.VisitLiteralExpr(e)
 }
 
@@ -62,13 +62,13 @@ func NewUnary(Operator Token, Right Expr) *Unary {
 	}
 }
 
-func (e Unary) Accept(visitor Visitor) any {
+func (e Unary) Accept(visitor VisitorExpr) any {
 	return visitor.VisitUnaryExpr(e)
 }
 
-type Visitor interface {
-	VisitBinaryExpr(binary Binary) any
-	VisitGroupingExpr(grouping Grouping) any
-	VisitLiteralExpr(literal Literal) any
-	VisitUnaryExpr(unary Unary) any
+type VisitorExpr interface {
+	VisitBinaryExpr(expr Binary) any
+	VisitGroupingExpr(expr Grouping) any
+	VisitLiteralExpr(expr Literal) any
+	VisitUnaryExpr(expr Unary) any
 }

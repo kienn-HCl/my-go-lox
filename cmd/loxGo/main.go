@@ -54,11 +54,11 @@ func run(source string) {
 	scan := myloxgo.NewScanner(source)
 	tokens := scan.ScanTokens()
 	parser := myloxgo.NewParser(tokens)
-	expression := parser.Parse()
+	statements := parser.Parse()
 
 	if myloxgo.HadError {
 		return
 	}
 
-	interpreter.Interpret(expression)
+	interpreter.Interpret(statements)
 }
