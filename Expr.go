@@ -66,9 +66,24 @@ func (e Unary) Accept(visitor VisitorExpr) any {
 	return visitor.VisitUnaryExpr(e)
 }
 
+type Variable struct {
+	Name Token
+}
+
+func NewVariable(Name Token) *Variable {
+	return &Variable{
+		Name: Name,
+	}
+}
+
+func (e Variable) Accept(visitor VisitorExpr) any {
+	return visitor.VisitVariableExpr(e)
+}
+
 type VisitorExpr interface {
 	VisitBinaryExpr(expr Binary) any
 	VisitGroupingExpr(expr Grouping) any
 	VisitLiteralExpr(expr Literal) any
 	VisitUnaryExpr(expr Unary) any
+	VisitVariableExpr(expr Variable) any
 }

@@ -15,11 +15,7 @@ func NewParser(tokens []Token) *Parser {
 func (p *Parser) Parse() []Stmt {
 	statements := make([]Stmt, 0, 100)
 	for !p.isAtEnd() {
-		stmt := p.statement()
-		if stmt == nil {
-			p.synchronize()
-		}
-		statements = append(statements, stmt)
+		statements = append(statements, p.declaration())
 	}
 
 	return statements
@@ -29,12 +25,43 @@ func (p *Parser) expression() (Expr, bool) {
 	return p.equality()
 }
 
+func (p *Parser) declaration() Stmt {
+	var stmt Stmt
+	if p.match(VAR) {
+		stmt = p.varDeclaration()
+	} else {
+		stmt = p.statement()
+	}
+	if stmt == nil {
+		p.synchronize()
+	}
+	return stmt
+}
+
 func (p *Parser) statement() Stmt {
 	if p.match(PRINT) {
 		return p.printStatement()
 	}
 
 	return p.expressionStatement()
+}
+
+func (p *Parser) varDeclaration() Stmt {
+	name, ok := p.consume(IDENTIFIER, "Expect variable name.")
+	if !ok {
+		return nil
+	}
+
+	var initializer Expr
+	if p.match(EQUAL) {
+		initializer, ok = p.expression()
+		if !ok {
+			return nil
+		}
+	}
+
+	p.consume(SEMICOLON, "Expect ';' after expression.")
+	return NewVar(*name, initializer)
 }
 
 func (p *Parser) printStatement() Stmt {
@@ -150,6 +177,8 @@ func (p *Parser) primary() (Expr, bool) {
 		return NewLiteral(nil), true
 	case p.match(NUMBER, STRING):
 		return NewLiteral(p.previous().Literal), true
+	case p.match(IDENTIFIER):
+        return NewVariable(*p.previous()), true
 	case p.match(LEFT_PAREN):
 		expr, ok := p.expression()
 		if !ok {

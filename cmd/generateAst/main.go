@@ -22,6 +22,7 @@ func main() {
 		"Grouping   : Expression Expr",
 		"Literal    : Value any",
 		"Unary      : Operator Token, Right Expr",
+		"Variable   : Name Token",
 	})
 	if err != nil {
 		log.Fatalln(err)
@@ -29,6 +30,7 @@ func main() {
 	err = defineAst(outputDir, "Stmt", []string{
 		"Express    : Expression Expr",
 		"Print      : Expression Expr",
+		"Var        : Name Token, Initializer Expr",
 	})
 	if err != nil {
 		log.Fatalln(err)

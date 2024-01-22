@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-var interpreter *myloxgo.Interpreter = &myloxgo.Interpreter{}
+var interpreter *myloxgo.Interpreter = myloxgo.NewInterpreter()
 
 func main() {
 	flag.Parse()

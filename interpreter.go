@@ -8,6 +8,13 @@ import (
 var HadRuntimeError bool = false
 
 type Interpreter struct {
+	Environment Environment
+}
+
+func NewInterpreter() *Interpreter {
+	return &Interpreter{
+		Environment: *NewEnvironment(),
+	}
 }
 
 func (i *Interpreter) Interpret(statements []Stmt) {
@@ -90,6 +97,14 @@ func (i *Interpreter) VisitUnaryExpr(expr Unary) any {
 	return nil
 }
 
+func (i *Interpreter) VisitVariableExpr(expr Variable) any {
+	value, err := i.Environment.get(expr.Name)
+	if err != nil {
+		return err
+	}
+	return value
+}
+
 func (i *Interpreter) VisitGroupingExpr(expr Grouping) any {
 	return i.evaluate(expr.Expression)
 }
@@ -120,6 +135,19 @@ func (i *Interpreter) VisitPrintStmt(stmt Print) any {
 		return err
 	}
 	fmt.Println(i.stringify(value))
+	return nil
+}
+
+func (i *Interpreter) VisitVarStmt(stmt Var) any {
+	var value any
+	if stmt.Initializer != nil {
+		value = i.evaluate(stmt.Initializer)
+		if err, ok := value.(error); ok {
+			return err
+		}
+	}
+
+	i.Environment.define(stmt.Name.Lexeme, value)
 	return nil
 }
 

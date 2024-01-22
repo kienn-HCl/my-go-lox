@@ -32,7 +32,24 @@ func (e Print) Accept(visitor VisitorStmt) any {
 	return visitor.VisitPrintStmt(e)
 }
 
+type Var struct {
+	Name        Token
+	Initializer Expr
+}
+
+func NewVar(Name Token, Initializer Expr) *Var {
+	return &Var{
+		Name:        Name,
+		Initializer: Initializer,
+	}
+}
+
+func (e Var) Accept(visitor VisitorStmt) any {
+	return visitor.VisitVarStmt(e)
+}
+
 type VisitorStmt interface {
 	VisitExpressStmt(stmt Express) any
 	VisitPrintStmt(stmt Print) any
+	VisitVarStmt(stmt Var) any
 }
