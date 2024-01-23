@@ -8,5 +8,12 @@ print 1 + 2 * 3;
 var a = 10;
 var b = 30;
 print "a=10, b=30";
-print "a+b";
+print "↓a+b";
 print a+b;
+print "a=b=5";
+a = b = 5;
+print "↓a";
+print a;
+print "↓b";
+print b;
+

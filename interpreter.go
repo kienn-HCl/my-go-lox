@@ -98,6 +98,14 @@ func (i *Interpreter) VisitUnaryExpr(expr Unary) any {
 	return nil
 }
 
+func (i *Interpreter) VisitGroupingExpr(expr Grouping) any {
+	return i.evaluate(expr.Expression)
+}
+
+func (i *Interpreter) VisitLiteralExpr(expr Literal) any {
+	return expr.Value
+}
+
 func (i *Interpreter) VisitVariableExpr(expr Variable) any {
 	value, err := i.Environment.get(expr.Name)
 	if err != nil {
@@ -106,12 +114,17 @@ func (i *Interpreter) VisitVariableExpr(expr Variable) any {
 	return value
 }
 
-func (i *Interpreter) VisitGroupingExpr(expr Grouping) any {
-	return i.evaluate(expr.Expression)
-}
+func (i *Interpreter) VisitAssignExpr(expr Assign) any {
+	value := i.evaluate(expr.value)
+	if err, ok := value.(error); ok {
+		return err
+	}
 
-func (i *Interpreter) VisitLiteralExpr(expr Literal) any {
-	return expr.Value
+	err := i.Environment.assign(expr.name, value)
+	if err != nil {
+		return err
+	}
+	return value
 }
 
 func (i *Interpreter) evaluate(expr Expr) any {
@@ -206,4 +219,3 @@ func (i *Interpreter) checkStringOperands(operator Token, left, right any, calc 
 
 	return NewRuntimeError(operator, "Operand must be a string.")
 }
-

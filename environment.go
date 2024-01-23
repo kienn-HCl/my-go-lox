@@ -23,3 +23,12 @@ func (e *Environment) get(name Token) (any, error) {
 
 	return nil, NewRuntimeError(name, "Undefined variable '"+name.Lexeme+"'.")
 }
+
+func (e *Environment) assign(name Token, value any) error {
+	if _, ok := e.Values[name.Lexeme]; ok {
+		e.Values[name.Lexeme] = value
+		return nil
+	}
+
+	return NewRuntimeError(name, "Undefined variable '"+name.Lexeme+"'.")
+}

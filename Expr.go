@@ -4,6 +4,22 @@ type Expr interface {
 	Accept(visitor VisitorExpr) any
 }
 
+type Assign struct {
+	name  Token
+	value Expr
+}
+
+func NewAssign(name Token, value Expr) *Assign {
+	return &Assign{
+		name:  name,
+		value: value,
+	}
+}
+
+func (e Assign) Accept(visitor VisitorExpr) any {
+	return visitor.VisitAssignExpr(e)
+}
+
 type Binary struct {
 	Left     Expr
 	Operator Token
@@ -81,6 +97,7 @@ func (e Variable) Accept(visitor VisitorExpr) any {
 }
 
 type VisitorExpr interface {
+	VisitAssignExpr(expr Assign) any
 	VisitBinaryExpr(expr Binary) any
 	VisitGroupingExpr(expr Grouping) any
 	VisitLiteralExpr(expr Literal) any

@@ -24,10 +24,6 @@ func (p *Parser) Parse() []Stmt {
 	return statements
 }
 
-func (p *Parser) expression() (Expr, bool) {
-	return p.equality()
-}
-
 func (p *Parser) declaration() Stmt {
 	var stmt Stmt
 	if p.match(VAR) {
@@ -83,6 +79,33 @@ func (p *Parser) expressionStatement() Stmt {
 	}
 	p.consume(SEMICOLON, "Expect ';' after expression.")
 	return NewExpress(expr)
+}
+
+func (p *Parser) expression() (Expr, bool) {
+	return p.assignment()
+}
+
+func (p *Parser) assignment() (Expr, bool) {
+	expr, ok := p.equality()
+	if !ok {
+		return nil, false
+	}
+
+	if p.match(EQUAL) {
+		equals := p.previous()
+		value, ok := p.assignment()
+		if !ok {
+			return nil, false
+		}
+
+		if v, ok := expr.(*Variable); ok {
+			return NewAssign(v.Name, value), true
+		}
+
+		parserError(equals, "Invalid assignment target.")
+	}
+
+	return expr, true
 }
 
 func (p *Parser) equality() (Expr, bool) {
@@ -181,7 +204,7 @@ func (p *Parser) primary() (Expr, bool) {
 	case p.match(NUMBER, STRING):
 		return NewLiteral(p.previous().Literal), true
 	case p.match(IDENTIFIER):
-        return NewVariable(*p.previous()), true
+		return NewVariable(*p.previous()), true
 	case p.match(LEFT_PAREN):
 		expr, ok := p.expression()
 		if !ok {
