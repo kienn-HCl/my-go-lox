@@ -2,6 +2,7 @@ package myloxgo
 
 import "fmt"
 
+// Token は文字をスキャンして得た字句の情報を保存する構造体.
 type Token struct {
 	Typ     TokenType
 	Lexeme  string
@@ -9,6 +10,7 @@ type Token struct {
 	Line    int
 }
 
+// NewToken はTokenのコンストラクタ.
 func NewToken(typ TokenType, lexeme string, literal any, line int) *Token {
 	return &Token{
 		Typ:     typ,

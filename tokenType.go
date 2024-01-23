@@ -1,8 +1,11 @@
+// Package myloxgo はloxインタープリタのgo実装.
 //go:generate stringer -type=TokenType
 package myloxgo
 
+// TokenType は字句の種類.
 type TokenType int
 
+// TokenType はenumとしてconst+iotaで実現.
 const (
     // 記号1個のトークン
     LEFT_PAREN TokenType = iota + 1

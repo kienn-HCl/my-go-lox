@@ -1,6 +1,12 @@
 print "one";
+print "one"+"two";
 print false;
-print 2
+// print 2 // error
 3 + 3;
-rint 2
+// rint 2; // error
 print 1 + 2 * 3;
+var a = 10;
+var b = 30;
+print "a=10, b=30";
+print "a+b";
+print a+b;

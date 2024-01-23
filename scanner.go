@@ -2,6 +2,7 @@ package myloxgo
 
 import "strconv"
 
+// Scanner は字句のスキャンを行うための構造体.java実装のloxにおけるScannerクラス.
 type Scanner struct {
 	source   string
 	tokens   []Token
@@ -11,6 +12,7 @@ type Scanner struct {
 	keywords map[string]TokenType
 }
 
+// NewScanner はScannerのコンストラクタ.
 func NewScanner(source string) *Scanner {
 	keywords := map[string]TokenType{
 		"and":    AND,
@@ -39,6 +41,7 @@ func NewScanner(source string) *Scanner {
 	}
 }
 
+// ScanTokens はスキャンのエントリーポイントとなるメソッド.
 func (s *Scanner) ScanTokens() []Token {
 	for !s.isAtEnd() {
 		s.start = s.current
@@ -111,9 +114,9 @@ func (s Scanner) isAtEnd() bool {
 }
 
 func (s *Scanner) advance() rune {
-	rune := []rune(s.source)[s.current]
+	char := []rune(s.source)[s.current]
 	s.current++
-	return rune
+	return char
 }
 
 func (s *Scanner) addToken(typ TokenType, literal any) {

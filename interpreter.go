@@ -5,18 +5,19 @@ import (
 	"os"
 )
 
-var HadRuntimeError bool = false
-
+// Interpreter は構文木を解釈するための構造体.java実装のloxにおけるInterpreterクラス.
 type Interpreter struct {
 	Environment Environment
 }
 
+// NewInterpreter はInterpreterのコンストラクタ.
 func NewInterpreter() *Interpreter {
 	return &Interpreter{
 		Environment: *NewEnvironment(),
 	}
 }
 
+// Interpret は構文木を実行するためのエントリーポイントとなるメソッド.
 func (i *Interpreter) Interpret(statements []Stmt) {
 	for _, statement := range statements {
 		err := i.execute(statement)
@@ -206,18 +207,3 @@ func (i *Interpreter) checkStringOperands(operator Token, left, right any, calc 
 	return NewRuntimeError(operator, "Operand must be a string.")
 }
 
-type RuntimeError struct {
-	Token   Token
-	Message string
-}
-
-func NewRuntimeError(token Token, message string) *RuntimeError {
-	return &RuntimeError{
-		Token:   token,
-		Message: message,
-	}
-}
-
-func (r *RuntimeError) Error() string {
-	return fmt.Sprintf("%s\n[line %d]", r.Message, r.Token.Line)
-}

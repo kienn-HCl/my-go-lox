@@ -1,9 +1,11 @@
 package myloxgo
 
+// Environment は環境のための構造体.java実装のloxにおけるEnvironmentクラス.
 type Environment struct {
 	Values map[string]any
 }
 
+// NewEnvironment はEnvironmentのコンストラクタ.
 func NewEnvironment() *Environment {
 	return &Environment{
 		Values: map[string]any{},

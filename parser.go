@@ -1,10 +1,12 @@
 package myloxgo
 
+// Parser は再帰下降構文解析を行うための構造体.java実装のloxにおけるParserクラス.
 type Parser struct {
 	tokens  []Token
 	current int
 }
 
+// NewParser はParserのコンストラクタ.
 func NewParser(tokens []Token) *Parser {
 	return &Parser{
 		tokens:  tokens,
@@ -12,6 +14,7 @@ func NewParser(tokens []Token) *Parser {
 	}
 }
 
+// Parse は構文解析のエントリーポイントとなるメソッド.
 func (p *Parser) Parse() []Stmt {
 	statements := make([]Stmt, 0, 100)
 	for !p.isAtEnd() {
