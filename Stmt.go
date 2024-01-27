@@ -4,6 +4,20 @@ type Stmt interface {
 	Accept(visitor VisitorStmt) any
 }
 
+type Block struct {
+	statements []Stmt
+}
+
+func NewBlock(statements []Stmt) *Block {
+	return &Block{
+		statements: statements,
+	}
+}
+
+func (e Block) Accept(visitor VisitorStmt) any {
+	return visitor.VisitBlockStmt(e)
+}
+
 type Express struct {
 	Expression Expr
 }
@@ -49,6 +63,7 @@ func (e Var) Accept(visitor VisitorStmt) any {
 }
 
 type VisitorStmt interface {
+	VisitBlockStmt(stmt Block) any
 	VisitExpressStmt(stmt Express) any
 	VisitPrintStmt(stmt Print) any
 	VisitVarStmt(stmt Var) any

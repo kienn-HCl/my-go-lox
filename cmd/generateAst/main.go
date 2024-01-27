@@ -29,6 +29,7 @@ func main() {
 		log.Fatalln(err)
 	}
 	err = defineAst(outputDir, "Stmt", []string{
+        "Block      : statements []Stmt",
 		"Express    : Expression Expr",
 		"Print      : Expression Expr",
 		"Var        : Name Token, Initializer Expr",

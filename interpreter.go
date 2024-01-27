@@ -7,13 +7,13 @@ import (
 
 // Interpreter は構文木を解釈するための構造体.java実装のloxにおけるInterpreterクラス.
 type Interpreter struct {
-	Environment Environment
+	Environment *Environment
 }
 
 // NewInterpreter はInterpreterのコンストラクタ.
 func NewInterpreter() *Interpreter {
 	return &Interpreter{
-		Environment: *NewEnvironment(),
+		Environment: NewEnvironment(),
 	}
 }
 
@@ -133,6 +133,32 @@ func (i *Interpreter) evaluate(expr Expr) any {
 
 func (i *Interpreter) execute(stmt Stmt) any {
 	return stmt.Accept(i)
+}
+
+func (i *Interpreter) executeBlock(statements []Stmt, environment *Environment) any {
+	previous := i.Environment
+	defer func() {
+		i.Environment = previous
+	}()
+
+	i.Environment = environment
+
+	for _, statement := range statements {
+		err := i.execute(statement)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (i *Interpreter) VisitBlockStmt(stmt Block) any {
+	err := i.executeBlock(stmt.statements, NewEnvironment().ChangeEnclosing(i.Environment))
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (i *Interpreter) VisitExpressStmt(stmt Express) any {

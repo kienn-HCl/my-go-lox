@@ -26,59 +26,91 @@ func (p *Parser) Parse() []Stmt {
 
 func (p *Parser) declaration() Stmt {
 	var stmt Stmt
+	var ok bool
 	if p.match(VAR) {
-		stmt = p.varDeclaration()
+		stmt, ok = p.varDeclaration()
 	} else {
-		stmt = p.statement()
+		stmt, ok = p.statement()
 	}
-	if stmt == nil {
+	if !ok {
 		p.synchronize()
 	}
 	return stmt
 }
 
-func (p *Parser) statement() Stmt {
-	if p.match(PRINT) {
+func (p *Parser) statement() (Stmt, bool) {
+	switch {
+	case p.match(PRINT):
 		return p.printStatement()
+	case p.match(LEFT_BRACE):
+		block, ok := p.block()
+		if !ok {
+			return nil, false
+		}
+		return NewBlock(block), true
 	}
 
 	return p.expressionStatement()
 }
 
-func (p *Parser) varDeclaration() Stmt {
+func (p *Parser) varDeclaration() (Stmt, bool) {
 	name, ok := p.consume(IDENTIFIER, "Expect variable name.")
 	if !ok {
-		return nil
+		return nil, false
 	}
 
 	var initializer Expr
 	if p.match(EQUAL) {
 		initializer, ok = p.expression()
 		if !ok {
-			return nil
+			return nil, false
 		}
 	}
 
-	p.consume(SEMICOLON, "Expect ';' after expression.")
-	return NewVar(*name, initializer)
+	_, ok = p.consume(SEMICOLON, "Expect ';' after expression.")
+	if !ok {
+		return nil, false
+	}
+	return NewVar(*name, initializer), true
 }
 
-func (p *Parser) printStatement() Stmt {
+func (p *Parser) printStatement() (Stmt, bool) {
 	value, ok := p.expression()
 	if !ok {
-		return nil
+		return nil, false
 	}
-	p.consume(SEMICOLON, "Expect ';' after expression.")
-	return NewPrint(value)
+	_, ok = p.consume(SEMICOLON, "Expect ';' after expression.")
+	if !ok {
+		return nil, false
+	}
+	return NewPrint(value), true
 }
 
-func (p *Parser) expressionStatement() Stmt {
+func (p *Parser) expressionStatement() (Stmt, bool) {
 	expr, ok := p.expression()
 	if !ok {
-		return nil
+		return nil, false
 	}
-	p.consume(SEMICOLON, "Expect ';' after expression.")
-	return NewExpress(expr)
+	_, ok = p.consume(SEMICOLON, "Expect ';' after expression.")
+	if !ok {
+		return nil, false
+	}
+	return NewExpress(expr), true
+}
+
+func (p *Parser) block() ([]Stmt, bool) {
+	statements := make([]Stmt, 0)
+
+	for !p.check(RIGHT_BRACE) && !p.isAtEnd() {
+		statements = append(statements, p.declaration())
+	}
+
+	_, ok := p.consume(RIGHT_BRACE, "Expect '}' after block.")
+	if !ok {
+		return nil, false
+	}
+
+	return statements, true
 }
 
 func (p *Parser) expression() (Expr, bool) {
