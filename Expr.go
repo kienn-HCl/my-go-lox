@@ -5,14 +5,14 @@ type Expr interface {
 }
 
 type Assign struct {
-	name  Token
-	value Expr
+	Name  Token
+	Value Expr
 }
 
-func NewAssign(name Token, value Expr) *Assign {
+func NewAssign(Name Token, Value Expr) *Assign {
 	return &Assign{
-		name:  name,
-		value: value,
+		Name:  Name,
+		Value: Value,
 	}
 }
 
@@ -66,6 +66,24 @@ func (e Literal) Accept(visitor VisitorExpr) any {
 	return visitor.VisitLiteralExpr(e)
 }
 
+type Logical struct {
+	Left     Expr
+	Operator Token
+	Right    Expr
+}
+
+func NewLogical(Left Expr, Operator Token, Right Expr) *Logical {
+	return &Logical{
+		Left:     Left,
+		Operator: Operator,
+		Right:    Right,
+	}
+}
+
+func (e Logical) Accept(visitor VisitorExpr) any {
+	return visitor.VisitLogicalExpr(e)
+}
+
 type Unary struct {
 	Operator Token
 	Right    Expr
@@ -101,6 +119,7 @@ type VisitorExpr interface {
 	VisitBinaryExpr(expr Binary) any
 	VisitGroupingExpr(expr Grouping) any
 	VisitLiteralExpr(expr Literal) any
+	VisitLogicalExpr(expr Logical) any
 	VisitUnaryExpr(expr Unary) any
 	VisitVariableExpr(expr Variable) any
 }

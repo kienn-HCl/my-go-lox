@@ -40,8 +40,14 @@ func (p *Parser) declaration() Stmt {
 
 func (p *Parser) statement() (Stmt, bool) {
 	switch {
+	case p.match(FOR):
+		return p.forStatement()
+	case p.match(IF):
+		return p.ifStatement()
 	case p.match(PRINT):
 		return p.printStatement()
+	case p.match(WHILE):
+		return p.whileStatement()
 	case p.match(LEFT_BRACE):
 		block, ok := p.block()
 		if !ok {
@@ -51,6 +57,97 @@ func (p *Parser) statement() (Stmt, bool) {
 	}
 
 	return p.expressionStatement()
+}
+
+func (p *Parser) forStatement() (Stmt, bool) {
+	_, ok := p.consume(LEFT_PAREN, "Expect '(' after 'for'.")
+	if !ok {
+		return nil, false
+	}
+
+	var initializer Stmt
+	if p.match(SEMICOLON) {
+		initializer = nil
+	} else if p.match(VAR) {
+		initializer, ok = p.varDeclaration()
+		if !ok {
+			return nil, false
+		}
+	} else {
+		initializer, ok = p.expressionStatement()
+		if !ok {
+			return nil, false
+		}
+	}
+
+	var condition Expr = NewLiteral(true)
+	if !p.check(SEMICOLON) {
+		condition, ok = p.expression()
+		if !ok {
+			return nil, false
+		}
+	}
+	_, ok = p.consume(SEMICOLON, "Expect ';' after loop condition.")
+	if !ok {
+		return nil, false
+	}
+
+	var increment Expr = nil
+	if !p.check(RIGHT_PAREN) {
+		increment, ok = p.expression()
+		if !ok {
+			return nil, false
+		}
+	}
+	_, ok = p.consume(RIGHT_PAREN, "Expect ')' after for clauses.")
+	if !ok {
+		return nil, false
+	}
+
+	body, ok := p.statement()
+	if !ok {
+		return nil, false
+	}
+
+	if increment != nil {
+		body = NewBlock([]Stmt{body, NewExpress(increment)})
+	}
+
+	body = NewWhile(condition, body)
+
+	if initializer != nil {
+		body = NewBlock([]Stmt{initializer, body})
+	}
+
+	return body, true
+}
+
+func (p *Parser) ifStatement() (Stmt, bool) {
+	_, ok := p.consume(LEFT_PAREN, "Expect '(' after 'if'.")
+	if !ok {
+		return nil, false
+	}
+	condition, ok := p.expression()
+	if !ok {
+		return nil, false
+	}
+	_, ok = p.consume(RIGHT_PAREN, "Expect ')' after if condition.")
+	if !ok {
+		return nil, false
+	}
+
+	thenBranch, ok := p.statement()
+	if !ok {
+		return nil, false
+	}
+	var elseBranch Stmt = nil
+	if p.match(ELSE) {
+		elseBranch, ok = p.statement()
+		if !ok {
+			return nil, false
+		}
+	}
+	return NewIf(condition, thenBranch, elseBranch), true
 }
 
 func (p *Parser) varDeclaration() (Stmt, bool) {
@@ -72,6 +169,28 @@ func (p *Parser) varDeclaration() (Stmt, bool) {
 		return nil, false
 	}
 	return NewVar(*name, initializer), true
+}
+
+func (p *Parser) whileStatement() (Stmt, bool) {
+	_, ok := p.consume(LEFT_PAREN, "Expect '(' after 'while'.")
+	if !ok {
+		return nil, false
+	}
+	condition, ok := p.expression()
+	if !ok {
+		return nil, false
+	}
+	_, ok = p.consume(RIGHT_PAREN, "Expect ')' after condition.")
+	if !ok {
+		return nil, false
+	}
+
+	body, ok := p.statement()
+	if !ok {
+		return nil, false
+	}
+
+	return NewWhile(condition, body), true
 }
 
 func (p *Parser) printStatement() (Stmt, bool) {
@@ -118,7 +237,7 @@ func (p *Parser) expression() (Expr, bool) {
 }
 
 func (p *Parser) assignment() (Expr, bool) {
-	expr, ok := p.equality()
+	expr, ok := p.or()
 	if !ok {
 		return nil, false
 	}
@@ -135,6 +254,42 @@ func (p *Parser) assignment() (Expr, bool) {
 		}
 
 		parserError(equals, "Invalid assignment target.")
+	}
+
+	return expr, true
+}
+
+func (p *Parser) or() (Expr, bool) {
+	expr, ok := p.and()
+	if !ok {
+		return nil, false
+	}
+
+	for p.match(OR) {
+		operator := *p.previous()
+		right, ok := p.and()
+		if !ok {
+			return nil, false
+		}
+		expr = NewLogical(expr, operator, right)
+	}
+
+	return expr, true
+}
+
+func (p *Parser) and() (Expr, bool) {
+	expr, ok := p.equality()
+	if !ok {
+		return nil, false
+	}
+
+	for p.match(AND) {
+		operator := *p.previous()
+		right, ok := p.equality()
+		if !ok {
+			return nil, false
+		}
+		expr = NewLogical(expr, operator, right)
 	}
 
 	return expr, true

@@ -18,10 +18,11 @@ func main() {
 	}
 	outputDir := flag.Arg(0)
 	err := defineAst(outputDir, "Expr", []string{
-		"Assign     : name Token, value Expr",
+		"Assign     : Name Token, Value Expr",
 		"Binary     : Left Expr, Operator Token, Right Expr",
 		"Grouping   : Expression Expr",
 		"Literal    : Value any",
+		"Logical    : Left Expr, Operator Token, Right Expr",
 		"Unary      : Operator Token, Right Expr",
 		"Variable   : Name Token",
 	})
@@ -29,10 +30,11 @@ func main() {
 		log.Fatalln(err)
 	}
 	err = defineAst(outputDir, "Stmt", []string{
-		"Block      : statements []Stmt",
+		"Block      : Statements []Stmt",
 		"Express    : Expression Expr",
-		"If         : condition Expr, thenBranch Stmt, elseBranch Stmt",
+		"If         : Condition Expr, ThenBranch Stmt, ElseBranch Stmt",
 		"Print      : Expression Expr",
+		"While      : condition Expr, body Stmt",
 		"Var        : Name Token, Initializer Expr",
 	})
 	if err != nil {

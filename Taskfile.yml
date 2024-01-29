@@ -8,6 +8,7 @@ tasks:
   genAst:
     cmds:
       - go run ./cmd/generateAst/main.go .
+      - task: fmt
 
   fmt:
     cmds:

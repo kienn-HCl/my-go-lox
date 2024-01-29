@@ -106,6 +106,24 @@ func (i *Interpreter) VisitLiteralExpr(expr Literal) any {
 	return expr.Value
 }
 
+func (i *Interpreter) VisitLogicalExpr(expr Logical) any {
+	left := i.evaluate(expr.Left)
+	if err, ok := left.(error); ok {
+		return err
+	}
+
+	if expr.Operator.Typ == OR {
+		if i.isTruthy(left) {
+			return left
+		}
+	} else {
+		if !i.isTruthy(left) {
+			return left
+		}
+	}
+	return i.evaluate(expr.Right)
+}
+
 func (i *Interpreter) VisitVariableExpr(expr Variable) any {
 	value, err := i.Environment.get(expr.Name)
 	if err != nil {
@@ -115,12 +133,12 @@ func (i *Interpreter) VisitVariableExpr(expr Variable) any {
 }
 
 func (i *Interpreter) VisitAssignExpr(expr Assign) any {
-	value := i.evaluate(expr.value)
+	value := i.evaluate(expr.Value)
 	if err, ok := value.(error); ok {
 		return err
 	}
 
-	err := i.Environment.assign(expr.name, value)
+	err := i.Environment.assign(expr.Name, value)
 	if err != nil {
 		return err
 	}
@@ -154,7 +172,7 @@ func (i *Interpreter) executeBlock(statements []Stmt, environment *Environment) 
 }
 
 func (i *Interpreter) VisitBlockStmt(stmt Block) any {
-	err := i.executeBlock(stmt.statements, NewEnvironment().ChangeEnclosing(i.Environment))
+	err := i.executeBlock(stmt.Statements, NewEnvironment().ChangeEnclosing(i.Environment))
 	if err != nil {
 		return err
 	}
@@ -165,6 +183,21 @@ func (i *Interpreter) VisitExpressStmt(stmt Express) any {
 	value := i.evaluate(stmt.Expression)
 	if err, ok := value.(error); ok {
 		return err
+	}
+	return nil
+}
+
+func (i *Interpreter) VisitIfStmt(stmt If) any {
+	if i.isTruthy(i.evaluate(stmt.Condition)) {
+		err := i.execute(stmt.ThenBranch)
+		if err != nil {
+			return err
+		}
+	} else if stmt.ElseBranch != nil {
+		err := i.execute(stmt.ElseBranch)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -191,6 +224,14 @@ func (i *Interpreter) VisitVarStmt(stmt Var) any {
 	return nil
 }
 
+func (i *Interpreter) VisitWhileStmt(stmt While) any {
+	for i.isTruthy(i.evaluate(stmt.condition)) {
+		i.execute(stmt.body)
+	}
+
+	return nil
+}
+
 func (i *Interpreter) isTruthy(object any) bool {
 	if object == nil {
 		return false
@@ -200,7 +241,6 @@ func (i *Interpreter) isTruthy(object any) bool {
 	}
 	return true
 }
-
 func (i *Interpreter) isEqual(a, b any) bool {
 	if a == nil && b == nil {
 		return true
