@@ -8,6 +8,12 @@ tasks:
   genAst:
     cmds:
       - go run ./cmd/generateAst/main.go .
+
   fmt:
     cmds:
       - go fmt
+
+  git:
+    cmds:
+      - git add .
+      - git commit -m {{.CLI_ARGS}}
