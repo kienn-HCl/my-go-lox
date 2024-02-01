@@ -27,9 +27,12 @@ func (p *Parser) Parse() []Stmt {
 func (p *Parser) declaration() Stmt {
 	var stmt Stmt
 	var ok bool
-	if p.match(VAR) {
+	switch {
+	case p.match(FUN):
+		stmt, ok = p.function("function")
+	case p.match(VAR):
 		stmt, ok = p.varDeclaration()
-	} else {
+	default:
 		stmt, ok = p.statement()
 	}
 	if !ok {
@@ -46,6 +49,8 @@ func (p *Parser) statement() (Stmt, bool) {
 		return p.ifStatement()
 	case p.match(PRINT):
 		return p.printStatement()
+	case p.match(RETURN):
+		return p.returnStatement()
 	case p.match(WHILE):
 		return p.whileStatement()
 	case p.match(LEFT_BRACE):
@@ -205,6 +210,24 @@ func (p *Parser) printStatement() (Stmt, bool) {
 	return NewPrint(value), true
 }
 
+func (p *Parser) returnStatement() (Stmt, bool) {
+	keyword := p.previous()
+	var value Expr = nil
+	var ok bool
+	if !p.check(SEMICOLON) {
+		value, ok = p.expression()
+		if !ok {
+			return nil, false
+		}
+	}
+
+	_, ok = p.consume(SEMICOLON, "Expect ';' after return value.")
+	if !ok {
+		return nil, false
+	}
+	return NewReturn(*keyword, value), true
+}
+
 func (p *Parser) expressionStatement() (Stmt, bool) {
 	expr, ok := p.expression()
 	if !ok {
@@ -215,6 +238,43 @@ func (p *Parser) expressionStatement() (Stmt, bool) {
 		return nil, false
 	}
 	return NewExpress(expr), true
+}
+
+func (p *Parser) function(kind string) (*Function, bool) {
+	name, ok := p.consume(IDENTIFIER, "Expect "+kind+" name.")
+	if !ok {
+		return nil, false
+	}
+	_, ok = p.consume(LEFT_PAREN, "Expect '(' after "+kind+" name.")
+	if !ok {
+		return nil, false
+	}
+	parameters := make([]Token, 0)
+	if !p.check(RIGHT_PAREN) {
+		for con := true; con; con = p.match(COMMA) {
+			if len(parameters) >= 255 {
+				parserError(p.peek(), "Can't have more than 255 parameters.")
+			}
+			param, ok := p.consume(IDENTIFIER, "Expect parameter name.")
+			if !ok {
+				return nil, false
+			}
+			parameters = append(parameters, *param)
+		}
+	}
+	_, ok = p.consume(RIGHT_PAREN, "Expect ')' after parameters.")
+	if !ok {
+		return nil, false
+	}
+	_, ok = p.consume(LEFT_BRACE, "Expect '{' before "+kind+" body.")
+	if !ok {
+		return nil, false
+	}
+	body, ok := p.block()
+	if !ok {
+		return nil, false
+	}
+	return NewFunction(*name, parameters, body), true
 }
 
 func (p *Parser) block() ([]Stmt, bool) {
@@ -377,7 +437,48 @@ func (p *Parser) unary() (Expr, bool) {
 		return NewUnary(operator, right), true
 	}
 
-	return p.primary()
+	return p.call()
+}
+
+func (p *Parser) call() (Expr, bool) {
+	expr, ok := p.primary()
+	if !ok {
+		return nil, false
+	}
+
+	for p.match(LEFT_PAREN) {
+		expr, ok = p.finishCall(expr)
+		if !ok {
+			return nil, false
+		}
+	}
+
+	return expr, true
+}
+
+func (p *Parser) finishCall(callee Expr) (Expr, bool) {
+	arguments := make([]Expr, 0)
+	if !p.check(RIGHT_PAREN) {
+		for con := true; con; con = p.match(COMMA) {
+			// c言語で実装するバイトコードインタープリタcloxでは引数に上限がある。互換性をもたせるため同じ制限を加えている。
+			if len(arguments) >= 255 {
+				parserError(p.peek(), "Can't have more than 255 arguments.")
+			}
+			expr, ok := p.expression()
+			if !ok {
+				return nil, false
+			}
+			arguments = append(arguments, expr)
+		}
+	}
+
+	// ランタイムエラー時の場所報告用のトークン
+	paren, ok := p.consume(RIGHT_PAREN, "Expect ')' after arguments.")
+	if !ok {
+		return nil, false
+	}
+
+	return NewCall(callee, *paren, arguments), true
 }
 
 func (p *Parser) primary() (Expr, bool) {

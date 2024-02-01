@@ -32,6 +32,24 @@ func (e Express) Accept(visitor VisitorStmt) any {
 	return visitor.VisitExpressStmt(e)
 }
 
+type Function struct {
+	Name   Token
+	Params []Token
+	Body   []Stmt
+}
+
+func NewFunction(Name Token, Params []Token, Body []Stmt) *Function {
+	return &Function{
+		Name:   Name,
+		Params: Params,
+		Body:   Body,
+	}
+}
+
+func (e Function) Accept(visitor VisitorStmt) any {
+	return visitor.VisitFunctionStmt(e)
+}
+
 type If struct {
 	Condition  Expr
 	ThenBranch Stmt
@@ -62,6 +80,22 @@ func NewPrint(Expression Expr) *Print {
 
 func (e Print) Accept(visitor VisitorStmt) any {
 	return visitor.VisitPrintStmt(e)
+}
+
+type Return struct {
+	Keyword Token
+	Value   Expr
+}
+
+func NewReturn(Keyword Token, Value Expr) *Return {
+	return &Return{
+		Keyword: Keyword,
+		Value:   Value,
+	}
+}
+
+func (e Return) Accept(visitor VisitorStmt) any {
+	return visitor.VisitReturnStmt(e)
 }
 
 type While struct {
@@ -99,8 +133,10 @@ func (e Var) Accept(visitor VisitorStmt) any {
 type VisitorStmt interface {
 	VisitBlockStmt(stmt Block) any
 	VisitExpressStmt(stmt Express) any
+	VisitFunctionStmt(stmt Function) any
 	VisitIfStmt(stmt If) any
 	VisitPrintStmt(stmt Print) any
+	VisitReturnStmt(stmt Return) any
 	VisitWhileStmt(stmt While) any
 	VisitVarStmt(stmt Var) any
 }

@@ -38,6 +38,24 @@ func (e Binary) Accept(visitor VisitorExpr) any {
 	return visitor.VisitBinaryExpr(e)
 }
 
+type Call struct {
+	Callee    Expr
+	Paren     Token
+	Arguments []Expr
+}
+
+func NewCall(Callee Expr, Paren Token, Arguments []Expr) *Call {
+	return &Call{
+		Callee:    Callee,
+		Paren:     Paren,
+		Arguments: Arguments,
+	}
+}
+
+func (e Call) Accept(visitor VisitorExpr) any {
+	return visitor.VisitCallExpr(e)
+}
+
 type Grouping struct {
 	Expression Expr
 }
@@ -117,6 +135,7 @@ func (e Variable) Accept(visitor VisitorExpr) any {
 type VisitorExpr interface {
 	VisitAssignExpr(expr Assign) any
 	VisitBinaryExpr(expr Binary) any
+	VisitCallExpr(expr Call) any
 	VisitGroupingExpr(expr Grouping) any
 	VisitLiteralExpr(expr Literal) any
 	VisitLogicalExpr(expr Logical) any

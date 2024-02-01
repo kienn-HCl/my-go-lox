@@ -20,6 +20,7 @@ func main() {
 	err := defineAst(outputDir, "Expr", []string{
 		"Assign     : Name Token, Value Expr",
 		"Binary     : Left Expr, Operator Token, Right Expr",
+		"Call       : Callee Expr, Paren Token, Arguments []Expr",
 		"Grouping   : Expression Expr",
 		"Literal    : Value any",
 		"Logical    : Left Expr, Operator Token, Right Expr",
@@ -32,8 +33,10 @@ func main() {
 	err = defineAst(outputDir, "Stmt", []string{
 		"Block      : Statements []Stmt",
 		"Express    : Expression Expr",
+		"Function   : Name Token, Params []Token, Body []Stmt",
 		"If         : Condition Expr, ThenBranch Stmt, ElseBranch Stmt",
 		"Print      : Expression Expr",
+		"Return     : Keyword Token, Value Expr",
 		"While      : condition Expr, body Stmt",
 		"Var        : Name Token, Initializer Expr",
 	})

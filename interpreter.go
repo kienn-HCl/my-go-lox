@@ -7,13 +7,17 @@ import (
 
 // Interpreter は構文木を解釈するための構造体.java実装のloxにおけるInterpreterクラス.
 type Interpreter struct {
+	Globals     *Environment
 	Environment *Environment
 }
 
 // NewInterpreter はInterpreterのコンストラクタ.
 func NewInterpreter() *Interpreter {
+	global := NewEnvironment()
+	global.define("clock", NewClock())
 	return &Interpreter{
-		Environment: NewEnvironment(),
+		Globals:     global,
+		Environment: global,
 	}
 }
 
@@ -79,6 +83,30 @@ func (i *Interpreter) VisitBinaryExpr(expr Binary) any {
 	}
 
 	return nil
+}
+
+func (i *Interpreter) VisitCallExpr(expr Call) any {
+	callee := i.evaluate(expr.Callee)
+	if v, ok := callee.(error); ok {
+		return v
+	}
+
+	arguments := make([]any, 0)
+	for _, argument := range expr.Arguments {
+		arg := i.evaluate(argument)
+		if v, ok := arg.(error); ok {
+			return v
+		}
+		arguments = append(arguments, arg)
+	}
+
+	if function, ok := callee.(LoxCallable); ok {
+		if len(arguments) != function.Arity() {
+			return NewRuntimeError(expr.Paren, "Expected "+fmt.Sprint(function.Arity())+" arguments but got "+fmt.Sprint(len(arguments))+".")
+		}
+		return function.Call(*i, arguments)
+	}
+	return NewRuntimeError(expr.Paren, "Can only call functions and classes.")
 }
 
 func (i *Interpreter) VisitUnaryExpr(expr Unary) any {
@@ -187,6 +215,12 @@ func (i *Interpreter) VisitExpressStmt(stmt Express) any {
 	return nil
 }
 
+func (i *Interpreter) VisitFunctionStmt(stmt Function) any {
+	function := NewLoxFunction(&stmt, i.Environment)
+	i.Environment.define(stmt.Name.Lexeme, function)
+	return nil
+}
+
 func (i *Interpreter) VisitIfStmt(stmt If) any {
 	if i.isTruthy(i.evaluate(stmt.Condition)) {
 		err := i.execute(stmt.ThenBranch)
@@ -209,6 +243,18 @@ func (i *Interpreter) VisitPrintStmt(stmt Print) any {
 	}
 	fmt.Println(i.stringify(value))
 	return nil
+}
+
+func (i *Interpreter) VisitReturnStmt(stmt Return) any {
+	var value any = nil
+	if stmt.Value != nil {
+		value = i.evaluate(stmt.Value)
+		if err, ok := value.(error); ok {
+			return err
+		}
+	}
+
+	return NewReturnValue(value)
 }
 
 func (i *Interpreter) VisitVarStmt(stmt Var) any {
