@@ -1,4 +1,4 @@
-package myloxgo
+package mygolox
 
 // Parser は再帰下降構文解析を行うための構造体.java実装のloxにおけるParserクラス.
 type Parser struct {

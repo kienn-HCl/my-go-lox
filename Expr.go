@@ -1,4 +1,4 @@
-package myloxgo
+package mygolox
 
 type Expr interface {
 	Accept(visitor VisitorExpr) any

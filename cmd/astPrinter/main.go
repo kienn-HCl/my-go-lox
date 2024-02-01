@@ -2,18 +2,18 @@ package main
 
 import (
 	"fmt"
-	"my-lox-go"
-	"my-lox-go/pkg/astPrinter"
+	"my-go-lox"
+	"my-go-lox/pkg/astPrinter"
 )
 
 func main() {
-	expression := myloxgo.NewBinary(
-		myloxgo.NewUnary(
-			*myloxgo.NewToken(myloxgo.MINUS, "-", nil, 1),
-			myloxgo.NewLiteral(123)),
-		*myloxgo.NewToken(myloxgo.STAR, "*", nil, 1),
-		myloxgo.NewGrouping(
-			myloxgo.NewLiteral(45.67)))
+	expression := mygolox.NewBinary(
+		mygolox.NewUnary(
+			*mygolox.NewToken(mygolox.MINUS, "-", nil, 1),
+			mygolox.NewLiteral(123)),
+		*mygolox.NewToken(mygolox.STAR, "*", nil, 1),
+		mygolox.NewGrouping(
+			mygolox.NewLiteral(45.67)))
 
 	printer := &astPrinter.AstPrinter{}
 	fmt.Println(printer.Print(expression))

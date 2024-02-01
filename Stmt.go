@@ -1,4 +1,4 @@
-package myloxgo
+package mygolox
 
 type Stmt interface {
 	Accept(visitor VisitorStmt) any

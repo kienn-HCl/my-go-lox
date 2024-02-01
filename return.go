@@ -1,4 +1,4 @@
-package myloxgo
+package mygolox
 
 type ReturnValue struct {
 	value any

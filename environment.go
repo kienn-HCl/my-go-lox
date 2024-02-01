@@ -1,4 +1,4 @@
-package myloxgo
+package mygolox
 
 // Environment は環境のための構造体.java実装のloxにおけるEnvironmentクラス.
 type Environment struct {

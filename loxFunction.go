@@ -1,4 +1,4 @@
-package myloxgo
+package mygolox
 
 type LoxFunction struct {
 	declaration *Function

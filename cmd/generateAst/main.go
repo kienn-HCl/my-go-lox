@@ -55,7 +55,7 @@ func defineAst(outputDir, baseName string, types []string) (err error) {
 		err = writer.Close()
 	}()
 
-	fmt.Fprintln(writer, "package myloxgo")
+	fmt.Fprintln(writer, "package mygolox")
 	fmt.Fprintln(writer)
 	// fmt.Fprintln(writer, "import")
 	// fmt.Fprintln(writer)

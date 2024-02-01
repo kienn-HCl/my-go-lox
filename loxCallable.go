@@ -1,4 +1,4 @@
-package myloxgo
+package mygolox
 
 type LoxCallable interface {
 	Arity() int

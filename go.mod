@@ -1,3 +1,3 @@
-module my-lox-go
+module my-go-lox
 
 go 1.21.5

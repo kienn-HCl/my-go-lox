@@ -1,7 +1,7 @@
-// Package myloxgo はloxインタープリタのgo実装.
+// Package mygolox はloxインタープリタのgo実装.
 //
 //go:generate stringer -type=TokenType
-package myloxgo
+package mygolox
 
 // TokenType は字句の種類.
 type TokenType int

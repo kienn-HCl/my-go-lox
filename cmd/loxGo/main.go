@@ -5,11 +5,11 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"my-lox-go"
+	"my-go-lox"
 	"os"
 )
 
-var interpreter *myloxgo.Interpreter = myloxgo.NewInterpreter()
+var interpreter *mygolox.Interpreter = mygolox.NewInterpreter()
 
 func main() {
 	flag.Parse()
@@ -30,10 +30,10 @@ func runFile(path string) {
 	}
 	run(string(bytes))
 
-	if myloxgo.HadError {
+	if mygolox.HadError {
 		os.Exit(65)
 	}
-	if myloxgo.HadRuntimeError {
+	if mygolox.HadRuntimeError {
 		os.Exit(70)
 	}
 }
@@ -46,17 +46,17 @@ func runPrompt() {
 			break
 		}
 		run(reader.Text())
-		myloxgo.HadError = false
+		mygolox.HadError = false
 	}
 }
 
 func run(source string) {
-	scan := myloxgo.NewScanner(source)
+	scan := mygolox.NewScanner(source)
 	tokens := scan.ScanTokens()
-	parser := myloxgo.NewParser(tokens)
+	parser := mygolox.NewParser(tokens)
 	statements := parser.Parse()
 
-	if myloxgo.HadError {
+	if mygolox.HadError {
 		return
 	}
 
