@@ -253,7 +253,7 @@ func (p *Parser) function(kind string) (*Function, bool) {
 	if !p.check(RIGHT_PAREN) {
 		for con := true; con; con = p.match(COMMA) {
 			if len(parameters) >= 255 {
-				parserError(p.peek(), "Can't have more than 255 parameters.")
+				parserResolverError(p.peek(), "Can't have more than 255 parameters.")
 			}
 			param, ok := p.consume(IDENTIFIER, "Expect parameter name.")
 			if !ok {
@@ -313,7 +313,7 @@ func (p *Parser) assignment() (Expr, bool) {
 			return NewAssign(v.Name, value), true
 		}
 
-		parserError(equals, "Invalid assignment target.")
+		parserResolverError(equals, "Invalid assignment target.")
 	}
 
 	return expr, true
@@ -462,7 +462,7 @@ func (p *Parser) finishCall(callee Expr) (Expr, bool) {
 		for con := true; con; con = p.match(COMMA) {
 			// c言語で実装するバイトコードインタープリタcloxでは引数に上限がある。互換性をもたせるため同じ制限を加えている。
 			if len(arguments) >= 255 {
-				parserError(p.peek(), "Can't have more than 255 arguments.")
+				parserResolverError(p.peek(), "Can't have more than 255 arguments.")
 			}
 			expr, ok := p.expression()
 			if !ok {
@@ -505,7 +505,7 @@ func (p *Parser) primary() (Expr, bool) {
 		return NewGrouping(expr), true
 	}
 
-	parserError(p.peek(), "Expect expression.")
+	parserResolverError(p.peek(), "Expect expression.")
 	return nil, false
 }
 
@@ -547,7 +547,7 @@ func (p *Parser) previous() *Token {
 
 func (p *Parser) consume(typ TokenType, message string) (*Token, bool) {
 	if !p.check(typ) {
-		parserError(p.peek(), message)
+		parserResolverError(p.peek(), message)
 		return nil, false
 	}
 

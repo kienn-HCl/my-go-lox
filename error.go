@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-// HadError は字句解析または構文解析の処理でエラーがあったことを伝えるフラグ.
+// HadError は字句解析,構文解析または変数解決の処理でエラーがあったことを伝えるフラグ.
 var HadError = false
 
 // HadRuntimeError はコードを実行する際の処理でエラーがあったことを伝えるフラグ.
@@ -15,7 +15,7 @@ func scannerError(line int, message string) {
 	report(line, "", message)
 }
 
-func parserError(token *Token, message string) {
+func parserResolverError(token *Token, message string) {
 	if token.Typ == EOF {
 		report(token.Line, " at end", message)
 	} else {

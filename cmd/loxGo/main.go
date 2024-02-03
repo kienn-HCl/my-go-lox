@@ -60,5 +60,12 @@ func run(source string) {
 		return
 	}
 
+	resolver := mygolox.NewResolver(interpreter)
+	resolver.ResolveStmts(statements)
+
+	if mygolox.HadError {
+		return
+	}
+
 	interpreter.Interpret(statements)
 }

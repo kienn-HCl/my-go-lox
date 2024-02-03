@@ -9,6 +9,7 @@ import (
 type Interpreter struct {
 	Globals     *Environment
 	Environment *Environment
+	Locals      map[Expr]int
 }
 
 // NewInterpreter はInterpreterのコンストラクタ.
@@ -18,6 +19,7 @@ func NewInterpreter() *Interpreter {
 	return &Interpreter{
 		Globals:     global,
 		Environment: global,
+		Locals:      map[Expr]int{},
 	}
 }
 
@@ -153,11 +155,18 @@ func (i *Interpreter) VisitLogicalExpr(expr Logical) any {
 }
 
 func (i *Interpreter) VisitVariableExpr(expr Variable) any {
-	value, err := i.Environment.get(expr.Name)
+	value, err := i.lookUpVariable(expr.Name, expr)
 	if err != nil {
 		return err
 	}
 	return value
+}
+
+func (i *Interpreter) lookUpVariable(name Token, expr Expr) (any, error) {
+	if distance, ok := i.Locals[expr]; ok {
+		return i.Environment.getAt(distance, name.Lexeme), nil
+	}
+	return i.Globals.get(name)
 }
 
 func (i *Interpreter) VisitAssignExpr(expr Assign) any {
@@ -166,9 +175,13 @@ func (i *Interpreter) VisitAssignExpr(expr Assign) any {
 		return err
 	}
 
-	err := i.Environment.assign(expr.Name, value)
-	if err != nil {
-		return err
+	if distance, ok := i.Locals[expr]; ok {
+		i.Environment.assignAt(distance, expr.Name, value)
+	} else {
+		err := i.Globals.assign(expr.Name, value)
+		if err != nil {
+			return err
+		}
 	}
 	return value
 }
@@ -179,6 +192,10 @@ func (i *Interpreter) evaluate(expr Expr) any {
 
 func (i *Interpreter) execute(stmt Stmt) any {
 	return stmt.Accept(i)
+}
+
+func (i *Interpreter) resolve(expr Expr, depth int) {
+	i.Locals[expr] = depth
 }
 
 func (i *Interpreter) executeBlock(statements []Stmt, environment *Environment) any {
